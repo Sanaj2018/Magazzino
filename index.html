@@ -1,81 +1,123 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Magazzino</title>
-
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#111827">
-
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Magazzino Ristorante</title>
+<style>
+body{
+    font-family: Arial, sans-serif;
+    margin:20px;
+    background:#f4f4f4;
+}
+h1{
+    text-align:center;
+}
+.container{
+    max-width:600px;
+    margin:auto;
+}
+input, button{
+    padding:10px;
+    margin:5px 0;
+    font-size:16px;
+}
+button{
+    cursor:pointer;
+}
+.card{
+    background:white;
+    padding:15px;
+    margin-top:10px;
+    border-radius:10px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+.actions button{
+    margin-right:5px;
+}
+.stock{
+    font-weight:bold;
+}
+</style>
 </head>
 <body>
-  <header class="header">
-    <h1>Magazzino</h1>
-    <div class="sub">Cibo (pz) • Bevande (bott)</div>
-  </header>
 
-  <main class="container">
-    <section class="card">
-      <div class="row">
-        <label>Movimento</label>
-        <select id="movimento">
-          <label>Data</label>
-          <input id="dataMov" type="date" />
-          <option value="carico">Carico</option>
-          <option value="scarico">Scarico</option>
-        </select>
+<div class="container">
+<h1>Magazzino</h1>
 
-        <label>Categoria</label>
-        <select id="categoria">
-          <option value="Cibo">Cibo</option>
-          <option value="Bevande">Bevande</option>
-        </select>
+<input type="text" id="nomeProdotto" placeholder="Nome prodotto">
+<button onclick="aggiungiProdotto()">Aggiungi Prodotto</button>
 
-        <label>Prodotto</label>
-        <input id="prodotto" type="text" placeholder="Es. Vino rosso" />
+<div id="listaProdotti"></div>
+</div>
 
-        <label>Q.tà</label>
-        <input id="quantita" type="number" min="1" step="1" placeholder="0" />
+<script>
+let prodotti = JSON.parse(localStorage.getItem("magazzino")) || [];
 
-        <label>Unità</label>
-        <input id="unita" type="text" value="pz" disabled />
-      </div>
+function salva(){
+    localStorage.setItem("magazzino", JSON.stringify(prodotti));
+}
 
-      <div class="actions">
-        <button id="btnAdd" class="primary">Salva</button>
-        <button id="btnReset" class="ghost">Reset</button>
-      </div>
+function render(){
+    const lista = document.getElementById("listaProdotti");
+    lista.innerHTML = "";
 
-      <div id="toast" class="toast" hidden></div>
-    </section>
-
-    <section class="card">
-      <div class="listHeader">
-        <input id="search" class="search" type="search" placeholder="Cerca prodotto…" />
-        <button id="btnExport" class="ghost">Esporta JSON</button>
-        <button id="btnExportMov" class="ghost">Esporta Movimenti</button>
-      </div>
-
-      <div class="sections">
-        <div class="section">
-          <h2>Cibo</h2>
-          <div id="listCibo" class="list"></div>
+    prodotti.forEach((p, index)=>{
+        lista.innerHTML += `
+        <div class="card">
+            <div><strong>${p.nome}</strong></div>
+            <div class="stock">Disponibile: ${p.quantita}</div>
+            <div class="actions">
+                <button onclick="carico(${index})">➕ Carico</button>
+                <button onclick="scarico(${index})">➖ Scarico</button>
+                <button onclick="elimina(${index})">🗑 Elimina</button>
+            </div>
         </div>
-        <div class="section">
-          <h2>Bevande</h2>
-          <div id="listBevande" class="list"></div>
-        </div>
-      </div>
-    </section>
-  </main>
+        `;
+    });
+}
 
-  <script src="app.js"></script>
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js");
+function aggiungiProdotto(){
+    const nome = document.getElementById("nomeProdotto").value;
+    if(nome.trim() === "") return;
+
+    prodotti.push({nome:nome, quantita:0});
+    document.getElementById("nomeProdotto").value="";
+    salva();
+    render();
+}
+
+function carico(index){
+    let q = prompt("Quantità da aggiungere:");
+    if(q){
+        prodotti[index].quantita += parseInt(q);
+        salva();
+        render();
     }
-  </script>
+}
+
+function scarico(index){
+    let q = prompt("Quantità da togliere:");
+    if(q){
+        prodotti[index].quantita -= parseInt(q);
+        if(prodotti[index].quantita < 0){
+            prodotti[index].quantita = 0;
+        }
+        salva();
+        render();
+    }
+}
+
+function elimina(index){
+    if(confirm("Sei sicuro di eliminare il prodotto?")){
+        prodotti.splice(index,1);
+        salva();
+        render();
+    }
+}
+
+render();
+</script>
+
 </body>
 </html>
