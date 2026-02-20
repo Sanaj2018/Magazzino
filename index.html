@@ -5,115 +5,181 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Magazzino Ristorante</title>
 <style>
-body{
-    font-family: Arial, sans-serif;
-    margin:20px;
-    background:#f4f4f4;
-}
-h1{
-    text-align:center;
-}
-.container{
-    max-width:600px;
-    margin:auto;
-}
-input, button{
-    padding:10px;
-    margin:5px 0;
-    font-size:16px;
-}
-button{
-    cursor:pointer;
-}
-.card{
-    background:white;
+  body{font-family:Arial,sans-serif;margin:20px;background:#f4f4f4;}
+  h1{text-align:center;}
+  .container{max-width:700px;margin:auto;}
+  .row{display:flex;gap:10px;flex-wrap:wrap}
+  input,button{padding:10px;margin:5px 0;font-size:16px;}
+  input{flex:1;min-width:150px}
+  button{cursor:pointer;}
+  .card{background:#fff;padding:15px;margin-top:10px;border-radius:12px;box-shadow:0 2px 5px rgba(0,0,0,0.1);}
+  .stock{font-weight:bold;margin-top:6px}
+  .actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+  .totale-box{
+    background:#222;
+    color:white;
     padding:15px;
+    border-radius:12px;
+    text-align:center;
+    font-size:20px;
+    margin-bottom:15px;
+  }
+  details{margin-top:10px}
+  ul{margin:8px 0 0 18px;padding:0}
+  li{margin:6px 0}
+  .pill{display:inline-block;background:#eee;border-radius:999px;padding:3px 8px;font-size:12px;margin-left:6px}
+  .movimento-box{
+    background:#fafafa;
+    padding:10px;
+    border-radius:8px;
     margin-top:10px;
-    border-radius:10px;
-    box-shadow:0 2px 5px rgba(0,0,0,0.1);
-}
-.actions button{
-    margin-right:5px;
-}
-.stock{
-    font-weight:bold;
-}
+  }
 </style>
 </head>
 <body>
 
 <div class="container">
-<h1>Magazzino</h1>
+  <h1>Magazzino</h1>
 
-<input type="text" id="nomeProdotto" placeholder="Nome prodotto">
-<button onclick="aggiungiProdotto()">Aggiungi Prodotto</button>
+  <div class="totale-box">
+    Totale pezzi in magazzino: <span id="totaleMagazzino">0</span>
+  </div>
 
-<div id="listaProdotti"></div>
+  <div class="card">
+    <div class="row">
+      <input type="text" id="nomeProdotto" placeholder="Nome prodotto">
+      <input type="number" id="quantitaIniziale" placeholder="Quantità iniziale">
+      <button onclick="aggiungiProdotto()">Aggiungi</button>
+    </div>
+  </div>
+
+  <div id="listaProdotti"></div>
 </div>
 
 <script>
 let prodotti = JSON.parse(localStorage.getItem("magazzino")) || [];
 
 function salva(){
-    localStorage.setItem("magazzino", JSON.stringify(prodotti));
+  localStorage.setItem("magazzino", JSON.stringify(prodotti));
+}
+
+function dataOggi(){
+  return new Date().toISOString().split("T")[0];
+}
+
+function formatDataIt(data){
+  if(!data) return "";
+  const [y,m,d] = data.split("-");
+  return d+"/"+m+"/"+y;
+}
+
+function calcolaTotale(){
+  let totale = 0;
+  prodotti.forEach(p=>{
+    totale += p.quantita;
+  });
+  document.getElementById("totaleMagazzino").innerText = totale;
 }
 
 function render(){
-    const lista = document.getElementById("listaProdotti");
-    lista.innerHTML = "";
+  const lista = document.getElementById("listaProdotti");
+  lista.innerHTML = "";
 
-    prodotti.forEach((p, index)=>{
-        lista.innerHTML += `
-        <div class="card">
-            <div><strong>${p.nome}</strong></div>
-            <div class="stock">Disponibile: ${p.quantita}</div>
-            <div class="actions">
-                <button onclick="carico(${index})">➕ Carico</button>
-                <button onclick="scarico(${index})">➖ Scarico</button>
-                <button onclick="elimina(${index})">🗑 Elimina</button>
-            </div>
+  prodotti.forEach((p, index)=>{
+
+    const movimenti = (p.movimenti || []).slice().reverse().map(m=>{
+      const segno = m.tipo === "carico" ? "➕" : "➖";
+      return `<li>${segno} <strong>${m.q}</strong> <span class="pill">${m.tipo}</span> - ${formatDataIt(m.data)}</li>`;
+    }).join("") || "<li>Nessun movimento</li>";
+
+    lista.innerHTML += `
+      <div class="card">
+        <div><strong>${p.nome}</strong></div>
+        <div class="stock">Disponibile: ${p.quantita}</div>
+
+        <div class="actions">
+          <button onclick="mostraMovimento(${index}, 'carico')">➕ Carico</button>
+          <button onclick="mostraMovimento(${index}, 'scarico')">➖ Scarico</button>
+          <button onclick="elimina(${index})">🗑 Elimina</button>
         </div>
-        `;
-    });
+
+        <div id="movimento-${index}" class="movimento-box" style="display:none;">
+          <input type="number" id="q-${index}" placeholder="Quantità">
+          <input type="date" id="data-${index}" value="${dataOggi()}">
+          <button onclick="confermaMovimento(${index})">Conferma</button>
+        </div>
+
+        <details>
+          <summary>Storico movimenti</summary>
+          <ul>${movimenti}</ul>
+        </details>
+      </div>
+    `;
+  });
+
+  calcolaTotale();
+}
+
+let tipoMovimentoTemp = {};
+
+function mostraMovimento(index, tipo){
+  tipoMovimentoTemp[index] = tipo;
+  document.getElementById("movimento-"+index).style.display = "block";
+}
+
+function confermaMovimento(index){
+  const q = parseInt(document.getElementById("q-"+index).value);
+  const data = document.getElementById("data-"+index).value;
+  if(!q || q <= 0) return;
+
+  const tipo = tipoMovimentoTemp[index];
+
+  if(tipo === "carico"){
+    prodotti[index].quantita += q;
+  } else {
+    prodotti[index].quantita -= q;
+    if(prodotti[index].quantita < 0) prodotti[index].quantita = 0;
+  }
+
+  prodotti[index].movimenti = prodotti[index].movimenti || [];
+  prodotti[index].movimenti.push({tipo:tipo, q:q, data:data});
+
+  document.getElementById("movimento-"+index).style.display = "none";
+
+  salva();
+  render();
 }
 
 function aggiungiProdotto(){
-    const nome = document.getElementById("nomeProdotto").value;
-    if(nome.trim() === "") return;
+  const nome = document.getElementById("nomeProdotto").value.trim();
+  const q0 = parseInt(document.getElementById("quantitaIniziale").value) || 0;
+  if(nome === "") return;
 
-    prodotti.push({nome:nome, quantita:0});
-    document.getElementById("nomeProdotto").value="";
-    salva();
-    render();
-}
+  const nuovo = {
+    nome:nome,
+    quantita:q0,
+    movimenti:[]
+  };
 
-function carico(index){
-    let q = prompt("Quantità da aggiungere:");
-    if(q){
-        prodotti[index].quantita += parseInt(q);
-        salva();
-        render();
-    }
-}
+  if(q0 > 0){
+    nuovo.movimenti.push({tipo:"carico", q:q0, data:dataOggi()});
+  }
 
-function scarico(index){
-    let q = prompt("Quantità da togliere:");
-    if(q){
-        prodotti[index].quantita -= parseInt(q);
-        if(prodotti[index].quantita < 0){
-            prodotti[index].quantita = 0;
-        }
-        salva();
-        render();
-    }
+  prodotti.push(nuovo);
+
+  document.getElementById("nomeProdotto").value="";
+  document.getElementById("quantitaIniziale").value="";
+
+  salva();
+  render();
 }
 
 function elimina(index){
-    if(confirm("Sei sicuro di eliminare il prodotto?")){
-        prodotti.splice(index,1);
-        salva();
-        render();
-    }
+  if(confirm("Sei sicuro?")){
+    prodotti.splice(index,1);
+    salva();
+    render();
+  }
 }
 
 render();
