@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Magazzino</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#111827">
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="header">
+    <h1>Magazzino</h1>
+    <div class="sub">Cibo (pz) • Bevande (bott)</div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="row">
+        <label>Movimento</label>
+        <select id="movimento">
+          <option value="carico">Carico</option>
+          <option value="scarico">Scarico</option>
+        </select>
+
+        <label>Categoria</label>
+        <select id="categoria">
+          <option value="Cibo">Cibo</option>
+          <option value="Bevande">Bevande</option>
+        </select>
+
+        <label>Prodotto</label>
+        <input id="prodotto" type="text" placeholder="Es. Vino rosso" />
+
+        <label>Q.tà</label>
+        <input id="quantita" type="number" min="1" step="1" placeholder="0" />
+
+        <label>Unità</label>
+        <input id="unita" type="text" value="pz" disabled />
+      </div>
+
+      <div class="actions">
+        <button id="btnAdd" class="primary">Salva</button>
+        <button id="btnReset" class="ghost">Reset</button>
+      </div>
+
+      <div id="toast" class="toast" hidden></div>
+    </section>
+
+    <section class="card">
+      <div class="listHeader">
+        <input id="search" class="search" type="search" placeholder="Cerca prodotto…" />
+        <button id="btnExport" class="ghost">Esporta JSON</button>
+      </div>
+
+      <div class="sections">
+        <div class="section">
+          <h2>Cibo</h2>
+          <div id="listCibo" class="list"></div>
+        </div>
+        <div class="section">
+          <h2>Bevande</h2>
+          <div id="listBevande" class="list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
+    }
+  </script>
+</body>
+</html>
