@@ -1,186 +1,464 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Magazzino Ristorante</title>
-<style>
-body{font-family:Arial;margin:20px;background:#f4f4f4;}
-h1{text-align:center;}
-.container{max-width:700px;margin:auto;}
-.row{display:flex;gap:10px;flex-wrap:wrap}
-input,select,button{padding:10px;font-size:16px;margin:5px 0;}
-input{flex:1;min-width:140px}
-button{cursor:pointer;border:none;border-radius:8px}
-.card{background:#fff;padding:15px;margin-top:12px;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-.stock{font-weight:bold;margin-top:6px}
-.totale-box{
-  background:#111;color:#fff;padding:15px;border-radius:12px;
-  text-align:center;font-size:20px;margin-bottom:15px;
-}
-.mov-box{
-  background:#f9f9f9;padding:12px;border-radius:10px;margin-top:10px;
-}
-.action-btn{
-  background:#007aff;color:white;width:100%;
-}
-.confirm-btn{
-  background:#28a745;color:white;width:100%;
-}
-.delete-btn{
-  background:#dc3545;color:white;margin-top:8px;width:100%;
-}
-details{margin-top:10px}
-ul{margin:8px 0 0 18px}
-.pill{background:#eee;border-radius:999px;padding:3px 8px;font-size:12px;margin-left:6px}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Magazzino</title>
+  <style>
+    :root{
+      --bg:#070b14;
+      --panel:#0b1222;
+      --panel2:#0a1020;
+      --text:#e8eefc;
+      --muted:#9aa8c7;
+      --line:rgba(255,255,255,.08);
+      --blue:#2f7bff;
+      --blue2:#1b56ff;
+      --danger:#ff4d4d;
+      --shadow:0 18px 60px rgba(0,0,0,.55);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(47,123,255,.18), transparent 60%),
+                  radial-gradient(900px 600px at 90% 0%, rgba(27,86,255,.14), transparent 55%),
+                  var(--bg);
+      color:var(--text);
+      padding:18px 14px 40px;
+    }
+    .wrap{max-width:480px;margin:0 auto;}
+    .title{
+      font-size:22px;
+      font-weight:800;
+      letter-spacing:.2px;
+      margin:6px 2px 4px;
+    }
+    .subtitle{
+      color:var(--muted);
+      font-size:12px;
+      margin:0 2px 14px;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .field{display:flex;flex-direction:column;gap:6px;}
+    .label{font-size:12px;color:var(--muted);padding-left:2px;}
+    input, select, button{
+      font: inherit;
+      color: var(--text);
+      background: rgba(255,255,255,.03);
+      border:1px solid var(--line);
+      border-radius: 12px;
+      padding:10px 12px;
+      outline:none;
+    }
+    input::placeholder{color:rgba(154,168,199,.65)}
+    input:focus, select:focus{border-color: rgba(47,123,255,.55); box-shadow: 0 0 0 4px rgba(47,123,255,.12);}
+    select{appearance:none;background-image:
+      linear-gradient(45deg, transparent 50%, rgba(232,238,252,.85) 50%),
+      linear-gradient(135deg, rgba(232,238,252,.85) 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) calc(50% - 2px),
+        calc(100% - 12px) calc(50% - 2px);
+      background-size:6px 6px;
+      background-repeat:no-repeat;
+      padding-right:34px;
+    }
+    .row3{display:grid;grid-template-columns: 1fr 1fr 1fr; gap:10px;}
+    .actions{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .btn{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .btn-primary{
+      background: linear-gradient(180deg, rgba(47,123,255,.95), rgba(27,86,255,.95));
+      border: none;
+      box-shadow: 0 10px 30px rgba(47,123,255,.18);
+    }
+    .btn-primary:active{transform: translateY(1px);}
+    .btn-ghost{background: rgba(255,255,255,.03);}
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:12px;
+    }
+    .pill{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .pill strong{font-size:12px;color:var(--muted);font-weight:700}
+    .pill span{font-size:12px;color:var(--text);opacity:.95}
+
+    .section{margin-top:14px;}
+    .sectionHeader{
+      display:flex;align-items:center;justify-content:space-between;
+      margin:18px 2px 10px;
+    }
+    .sectionHeader h3{
+      margin:0;
+      font-size:14px;
+      letter-spacing:.2px;
+    }
+    .empty{color:rgba(154,168,199,.7);font-size:12px;padding:10px 2px}
+    .list{
+      display:flex;flex-direction:column;gap:10px;
+    }
+    .item{
+      border:1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.02);
+      padding:12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .item .name{font-weight:700;font-size:14px}
+    .item .meta{color:var(--muted);font-size:12px;margin-top:3px}
+    .qty{
+      font-weight:800;
+      background: rgba(47,123,255,.18);
+      border:1px solid rgba(47,123,255,.28);
+      padding:8px 10px;
+      border-radius: 12px;
+      min-width: 86px;
+      text-align:right;
+      white-space:nowrap;
+    }
+    .itemBtns{
+      display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;
+    }
+    .mini{
+      padding:8px 10px;
+      border-radius: 12px;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .mini-danger{border-color: rgba(255,77,77,.35); background: rgba(255,77,77,.10);}
+    .mini:active{transform: translateY(1px);}
+    .toast{
+      position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+      background: rgba(10,16,32,.92);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--text);
+      padding:10px 12px;border-radius: 999px;
+      font-size:12px;
+      box-shadow: var(--shadow);
+      opacity:0; pointer-events:none;
+      transition: opacity .2s ease;
+    }
+    .toast.show{opacity:1;}
+  </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="title">Magazzino</div>
+    <div class="subtitle" id="sub">Cibo (0 pz) • Bevande (0 pz)</div>
 
-<div class="container">
-<h1>Magazzino</h1>
+    <div class="card">
+      <div class="grid">
+        <div class="field">
+          <div class="label">Movimento</div>
+          <select id="movimento">
+            <option value="carico">Carico</option>
+            <option value="scarico">Scarico</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="label">Categoria</div>
+          <select id="categoria">
+            <option value="cibo">Cibo</option>
+            <option value="bevande">Bevande</option>
+          </select>
+        </div>
 
-<div class="totale-box">
-Totale pezzi in magazzino: <span id="totaleMagazzino">0</span>
-</div>
+        <div class="field" style="grid-column:1/-1;">
+          <div class="label">Prodotto</div>
+          <input id="prodotto" placeholder="Es. Vino rosso" />
+        </div>
 
-<div class="card">
-<div class="row">
-<input type="text" id="nomeProdotto" placeholder="Nome prodotto">
-<input type="number" id="quantitaIniziale" placeholder="Quantità iniziale">
-<button onclick="aggiungiProdotto()">Aggiungi</button>
-</div>
-</div>
+        <div class="row3" style="grid-column:1/-1;">
+          <div class="field">
+            <div class="label">Q.tà</div>
+            <input id="qta" type="number" inputmode="numeric" placeholder="0" />
+          </div>
+          <div class="field">
+            <div class="label">Unità</div>
+            <select id="unita">
+              <option value="pz">pz</option>
+              <option value="bottiglie">bottiglie</option>
+              <option value="kg">kg</option>
+              <option value="l">l</option>
+              <option value="conf">conf</option>
+            </select>
+          </div>
+          <div class="field">
+            <div class="label">Data</div>
+            <input id="data" type="date" />
+          </div>
+        </div>
+      </div>
 
-<div id="listaProdotti"></div>
-</div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnSalva">Salva</button>
+        <button class="btn btn-ghost" id="btnReset">Reset</button>
+      </div>
+
+      <div class="split">
+        <input id="search" placeholder="Cerca prodotto..." />
+        <button class="btn" id="btnExport">Esporta JSON</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="sectionHeader">
+        <h3>Cibo</h3>
+      </div>
+      <div id="listCibo" class="list"></div>
+      <div id="emptyCibo" class="empty">Vuoto</div>
+    </div>
+
+    <div class="section">
+      <div class="sectionHeader">
+        <h3>Bevande</h3>
+      </div>
+      <div id="listBevande" class="list"></div>
+      <div id="emptyBevande" class="empty">Vuoto</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Salvato</div>
 
 <script>
-let prodotti = JSON.parse(localStorage.getItem("magazzino")) || [];
+  const LS_KEY = "magazzino_v2";
 
-function salva(){
-localStorage.setItem("magazzino", JSON.stringify(prodotti));
-}
+  let state = load() || {
+    items: [] // {id, categoria:'cibo'|'bevande', nome, unita, qty, movimenti:[{tipo,q,data,unita}]}
+  };
 
-function oggi(){
-return new Date().toISOString().split("T")[0];
-}
+  // --- helpers
+  const $ = (id) => document.getElementById(id);
 
-function formatData(d){
-if(!d) return "";
-const [y,m,g]=d.split("-");
-return g+"/"+m+"/"+y;
-}
+  function todayISO(){
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const dd = String(d.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
 
-function totale(){
-let t=0;
-prodotti.forEach(p=> t+=p.quantita);
-document.getElementById("totaleMagazzino").innerText=t;
-}
+  function showToast(msg){
+    const t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"), 1200);
+  }
 
-function render(){
-const lista=document.getElementById("listaProdotti");
-lista.innerHTML="";
+  function save(){
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
 
-prodotti.forEach((p,i)=>{
+  function load(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    }catch(e){
+      return null;
+    }
+  }
 
-const mov=(p.movimenti||[]).slice().reverse().map(m=>{
-const segno=m.tipo==="carico"?"➕":"➖";
-return `<li>${segno} <strong>${m.q}</strong> <span class="pill">${m.tipo}</span> - ${formatData(m.data)}</li>`;
-}).join("") || "<li>Nessun movimento</li>";
+  function normName(s){
+    return (s||"").trim().toLowerCase();
+  }
 
-lista.innerHTML+=`
-<div class="card">
-<div><strong>${p.nome}</strong></div>
-<div class="stock">Disponibile: ${p.quantita}</div>
+  function upsertByName({categoria, nome, unita, delta, movimento, data}){
+    const key = normName(nome);
+    if(!key) return {ok:false, msg:"Inserisci prodotto"};
+    if(!Number.isFinite(delta) || delta <= 0) return {ok:false, msg:"Quantità non valida"};
 
-<button class="action-btn" onclick="toggleMov(${i})">Carico / Scarico</button>
+    let item = state.items.find(x => x.categoria === categoria && normName(x.nome) === key && x.unita === unita);
 
-<div id="mov-${i}" class="mov-box" style="display:none;">
-<select id="tipo-${i}">
-<option value="carico">Carico</option>
-<option value="scarico">Scarico</option>
-</select>
-<input type="number" id="q-${i}" placeholder="Quantità">
-<input type="date" id="data-${i}" value="${oggi()}">
-<button class="confirm-btn" onclick="conferma(${i})">Conferma</button>
-</div>
+    if(!item){
+      // se è scarico su prodotto inesistente, lo creo a 0 e poi scarico (rimane 0)
+      item = {
+        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random(),
+        categoria,
+        nome: nome.trim(),
+        unita,
+        qty: 0,
+        movimenti: []
+      };
+      state.items.push(item);
+    }
 
-<button class="delete-btn" onclick="elimina(${i})">Elimina prodotto</button>
+    if(movimento === "carico"){
+      item.qty += delta;
+    }else{
+      item.qty -= delta;
+      if(item.qty < 0) item.qty = 0;
+    }
 
-<details>
-<summary>Storico movimenti</summary>
-<ul>${mov}</ul>
-</details>
+    item.movimenti.push({ tipo: movimento, q: delta, data, unita });
+    return {ok:true};
+  }
 
-</div>
-`;
-});
+  function totals(){
+    let cibo = 0, bevande = 0;
+    for(const it of state.items){
+      if(it.categoria === "cibo") cibo += it.qty;
+      else bevande += it.qty;
+    }
+    return {cibo, bevande};
+  }
 
-totale();
-}
+  function render(){
+    const q = normName($("search").value);
 
-function toggleMov(i){
-const box=document.getElementById("mov-"+i);
-box.style.display= box.style.display==="none" ? "block" : "none";
-}
+    const items = state.items
+      .filter(it => !q || normName(it.nome).includes(q))
+      .sort((a,b)=> normName(a.nome).localeCompare(normName(b.nome)));
 
-function conferma(i){
-const tipo=document.getElementById("tipo-"+i).value;
-const q=parseInt(document.getElementById("q-"+i).value);
-const data=document.getElementById("data-"+i).value;
-if(!q || q<=0) return;
+    const cibo = items.filter(x=>x.categoria==="cibo");
+    const bevande = items.filter(x=>x.categoria==="bevande");
 
-if(tipo==="carico"){
-prodotti[i].quantita+=q;
-}else{
-prodotti[i].quantita-=q;
-if(prodotti[i].quantita<0) prodotti[i].quantita=0;
-}
+    renderList("listCibo", "emptyCibo", cibo);
+    renderList("listBevande", "emptyBevande", bevande);
 
-prodotti[i].movimenti=prodotti[i].movimenti||[];
-prodotti[i].movimenti.push({tipo:tipo,q:q,data:data});
+    const t = totals();
+    $("sub").textContent = `Cibo (${t.cibo} pz) • Bevande (${t.bevande} pz)`;
+  }
 
-document.getElementById("mov-"+i).style.display="none";
+  function renderList(listId, emptyId, arr){
+    const list = $(listId);
+    const empty = $(emptyId);
 
-salva();
-render();
-}
+    list.innerHTML = "";
+    if(arr.length === 0){
+      empty.style.display = "block";
+      return;
+    }
+    empty.style.display = "none";
 
-function aggiungiProdotto(){
-const nome=document.getElementById("nomeProdotto").value.trim();
-const q0=parseInt(document.getElementById("quantitaIniziale").value)||0;
-if(nome==="") return;
+    for(const it of arr){
+      const el = document.createElement("div");
+      el.className = "item";
 
-const nuovo={
-nome:nome,
-quantita:q0,
-movimenti:[]
-};
+      el.innerHTML = `
+        <div style="min-width:0;">
+          <div class="name">${escapeHtml(it.nome)}</div>
+          <div class="meta">${it.unita}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+          <div class="qty">${it.qty} ${escapeHtml(it.unita)}</div>
+          <div class="itemBtns">
+            <button class="mini" data-act="quickCarico">+1</button>
+            <button class="mini" data-act="quickScarico">-1</button>
+            <button class="mini mini-danger" data-act="delete">Elimina</button>
+          </div>
+        </div>
+      `;
 
-if(q0>0){
-nuovo.movimenti.push({tipo:"carico",q:q0,data:oggi()});
-}
+      el.querySelector('[data-act="quickCarico"]').onclick = () => {
+        upsertByName({categoria: it.categoria, nome: it.nome, unita: it.unita, delta: 1, movimento:"carico", data: todayISO()});
+        save(); render(); showToast("Carico +1");
+      };
+      el.querySelector('[data-act="quickScarico"]').onclick = () => {
+        upsertByName({categoria: it.categoria, nome: it.nome, unita: it.unita, delta: 1, movimento:"scarico", data: todayISO()});
+        save(); render(); showToast("Scarico -1");
+      };
+      el.querySelector('[data-act="delete"]').onclick = () => {
+        if(confirm(`Eliminare "${it.nome}"?`)){
+          state.items = state.items.filter(x=>x.id !== it.id);
+          save(); render(); showToast("Eliminato");
+        }
+      };
 
-prodotti.push(nuovo);
+      list.appendChild(el);
+    }
+  }
 
-document.getElementById("nomeProdotto").value="";
-document.getElementById("quantitaIniziale").value="";
+  function resetForm(){
+    $("movimento").value = "carico";
+    $("categoria").value = "cibo";
+    $("prodotto").value = "";
+    $("qta").value = "";
+    $("unita").value = "pz";
+    $("data").value = todayISO();
+  }
 
-salva();
-render();
-}
+  function exportJSON(){
+    const data = JSON.stringify(state, null, 2);
+    const blob = new Blob([data], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `magazzino_${todayISO()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+    showToast("JSON esportato");
+  }
 
-function elimina(i){
-if(confirm("Sei sicuro?")){
-prodotti.splice(i,1);
-salva();
-render();
-}
-}
+  function escapeHtml(s){
+    return (s||"").replace(/[&<>"']/g, (c)=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+    }[c]));
+  }
 
-render();
+  // --- events
+  $("btnSalva").onclick = () => {
+    const movimento = $("movimento").value;
+    const categoria = $("categoria").value;
+    const nome = $("prodotto").value;
+    const unita = $("unita").value;
+    const data = $("data").value || todayISO();
+    const delta = parseInt($("qta").value, 10);
+
+    const res = upsertByName({categoria, nome, unita, delta, movimento, data});
+    if(!res.ok){
+      showToast(res.msg || "Errore");
+      return;
+    }
+    save();
+    render();
+    resetForm();
+    showToast("Salvato");
+  };
+
+  $("btnReset").onclick = () => {
+    resetForm();
+    showToast("Reset");
+  };
+
+  $("btnExport").onclick = exportJSON;
+  $("search").addEventListener("input", render);
+
+  // init
+  $("data").value = todayISO();
+  render();
 </script>
-
 </body>
 </html>
